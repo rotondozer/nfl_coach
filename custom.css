@@ -1,0 +1,11 @@
+.team-name {
+  display: inline-block;
+  width: 49%;
+  
+}
+
+.team-score {
+  display: inline-block;
+  width: 49%;
+  text-align: right;
+}
