@@ -33,47 +33,36 @@ numberGenerator.effectiveness = function (type) {
     }
   }
 };
-//not sure if i want to keep this punt function
-/*var kick(fgORpunt) = function() {
-  if (fgORpunt === 'punt') {
-    var puntDistance = numberGenerator.effectiveness(fgORpunt);
-    $("#home-play-updates").append("HOME team punted for " + puntDistance + " yards");
-    opponentFieldPosition -= puntDistance + totalYdsGained;
-    $("#away-play-updates").append("AWAY teams begins on " + ydLineConverter());
-  } else if (fgORpunt === 'field goal') { // how to consolidate this
-    var odds = numberGenerator.effectiveness("probability");
-    if (totalYdsGained > 90) { // inside the 10 yd line
-      if (odds < 98) {
-        // field goal is good
-      } else {
-        //fg no good
+var fieldgoal = [
+  /*inside10:*/ [/*outerYdLine*/ 90, /*innerYdLine*/ 100, /*kickOdds*/ 98],
+  /*between25and10:*/ [/*outerYdLine*/ 75, /*innerYdLine*/ 90, /*kickOdds*/ 80],
+  /*between35and25:*/ [/*outerYdLine*/ 64, /*innerYdLine*/ 75, /*kickOdds*/ 60],
+  /*between42and35:*/ [/*outerYdLine*/ 57, /*innerYdLine*/ 64, /*kickOdds*/ 20],
+  /*outOfRange:*/ [/*outerYdLine*/ 1, /*innerYdLine*/ 57, /*kickOdds*/ 0]
+]
+fieldgoal.kick = function() {
+  var arrLength = this.length; //should i be making a function instead of re-writing this exact loop?
+  var i;
+  for (i = 0; i < arrLength; i++) {
+    if (totalYdsGained > this[i][0] && totalYdsGained <= this[i][1]) {// if totalYdsGained is between outerYdLine and innerYdLine
+      if (numberGenerator.effectiveness("probability") < this[i][2]) { // if probability generator is in favor of successful kick odd
+        alert("field goal good");
+        totalPoints += 3;
+      } else { // probability generated missed field goal odds
+        alert("field goal missed");
       }
-    } else if (totalYdsGained > 74 && totalYdsGained <= 90) { //between 25 and 10 yd line
-      if (odds < 80) {
-        //field goal is good
-      } else {
-        //fg no good
-      }
-    } else if (totalYdsGained > 60 && totalYdsGained <= 74) { // between 40 and 25 yd line
-      if (odds < 60) {
-        //fg is good
-      } else {
-        //fg no good
-      }
-    } else { //further back than 40 yd line
-
+      return;
     }
   }
-  // call opponentPossession function
-} */
+}
+//not sure if i want to keep this punt function
 
 var playTypes = {
   insiderun: {execThreshold: 95, one: "notEffective", two: "minEffective", three: "effective", four: "veryEffective", five: "superEffective", six: "bigPlay"},
   outsiderun: {execThreshold: 90, one: "minEffective", two: "notEffective", three: "effective", four: "veryEffective", five: "superEffective", six: "bigPlay"},
   shortpass: {execThreshold: 80, one: "effective", two: "minEffective", three: "notEffective", four: "veryEffective", five: "superEffective", six: "bigPlay"},
   mediumpass: {execThreshold: 60, one: "veryEffective", two: "superEffective", three: "effective", four: "bigPlay", five: "notEffective", six: "minEffective"},
-  deeppass: {execThreshold: 30, one: "bigPlay", two: "superEffective", three: "veryEffective", four: "effective", five: "notEffective", six: "minEffective"},
-
+  deeppass: {execThreshold: 30, one: "bigPlay", two: "superEffective", three: "veryEffective", four: "effective", five: "notEffective", six: "minEffective"}
 }
 
 playTypes.playExecution = function(input) { //where 'input' is specificPlay + generalPlay

@@ -19,11 +19,13 @@ $(document).ready(function() {
 
     else if (playCall != null) {
       type = $("input").val(); // i don't think i need this if conditional bc huddle has a fail safe for incorrect input...keep for now
-      if (playCall === 'run' || playCall === 'pass')
+      if (playCall === 'run' || playCall === 'pass') {
         huddle(playCall, type); // call huddle, which calls playExecution
         downs.advanceDown(); // advance downs,
       } else if (playCall === 'kick') {
-        // call kick function with type as parameter
+        if (type === 'field goal') {
+          fieldgoal.kick();
+        }
       }
     } // end of if playcall is not null
     $("input").val("");
