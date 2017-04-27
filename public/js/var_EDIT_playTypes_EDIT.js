@@ -20,7 +20,6 @@ var numberGenerator = [
   ["veryEffective", 4, 7], // 7-10 yds
   ["superEffective", 11, 10], // 10-20 yds
   ["bigPlay", 61, 20], // 21-80 yds??
-  // FIELD GOAL
   ["punt", 30, 35]// PUNT 35-64
 ]
 
@@ -46,10 +45,10 @@ fieldgoal.kick = function() {
   for (i = 0; i < arrLength; i++) {
     if (totalYdsGained > this[i][0] && totalYdsGained <= this[i][1]) {// if totalYdsGained is between outerYdLine and innerYdLine
       if (numberGenerator.effectiveness("probability") < this[i][2]) { // if probability generator is in favor of successful kick odd
-        alert("field goal good");
+        $("#home-play-updates").append("FIELD GOAL from the " + ydLineConverter() + " is GOOD!");
         totalPoints += 3;
       } else { // probability generated missed field goal odds
-        alert("field goal missed");
+        $("#home-play-updates").append("FIELD GOAL from the " + ydLineConverter() + " is MISSED");
       }
       return;
     }
@@ -63,6 +62,7 @@ var playTypes = {
   shortpass: {execThreshold: 80, one: "effective", two: "minEffective", three: "notEffective", four: "veryEffective", five: "superEffective", six: "bigPlay"},
   mediumpass: {execThreshold: 60, one: "veryEffective", two: "superEffective", three: "effective", four: "bigPlay", five: "notEffective", six: "minEffective"},
   deeppass: {execThreshold: 30, one: "bigPlay", two: "superEffective", three: "veryEffective", four: "effective", five: "notEffective", six: "minEffective"}
+  //punt object reuturn effectiveness of return, same method applied
 }
 
 playTypes.playExecution = function(input) { //where 'input' is specificPlay + generalPlay
@@ -72,7 +72,7 @@ playTypes.playExecution = function(input) { //where 'input' is specificPlay + ge
   }
   else { // threshold has been crossed
     var odds = numberGenerator.effectiveness("probability");
-    // HOW DO I CONSOLIDATE THIS...IMMEDIATELY INVOKE FUNCTION?
+    // HOW DO I CONSOLIDATE THIS...IMMEDIATELY INVOKE FUNCTION? for loop, i+whatever
     if (odds <= 46) {
       ydsGainedThisDown = numberGenerator.effectiveness(this[input].one);
     } else if (odds >= 47 && odds <= 72) {
@@ -98,12 +98,11 @@ var huddle = function(generalPlay, specificPlay) {
   if (playTypes.hasOwnProperty(specificPlay + generalPlay)) {
     // if input matches object in playTypes, execute that play function
     playTypes.playExecution(specificPlay + generalPlay);
-    $("input").attr("placeholder", "RUN or PASS");
+    $("input").attr("placeholder", "RUN or PASS?");
 
     playCall = null;
     type = null;
-  }
-  else {
+  } else {
     alert("choose a " + generalPlay.toUpperCase() + " type");
     type = null;
   }
@@ -126,6 +125,7 @@ downs.advanceDown = function(/* not sure if i need these*/) {
         $("#home-play-updates").append("<p>" + ydsGainedThisDown + " yards gained on " + this[i][0] + " down</p>" );
       }
     }
+
     if (totalYdsGained >= 100) { //TOUCHDOWN
       totalPoints += 7; //increase totalPoints by 7
       $("#home-play-updates").append("<p>TOUCHDOWN!</p>" );
@@ -152,7 +152,7 @@ downs.advanceDown = function(/* not sure if i need these*/) {
           this[(i + 1) % 4][1] = true; // next down <-- this alg loops around to first -- not actually needed here
           $("#home-play-updates").append("<p>" + this[(i + 1) % 4][0] + " down and " + ydsToGo + " from the " + ydLineConverter() + " yard line");
           if (downs[3][1]) {
-            $("input").attr("placeholder", "KICK or GO FOR IT");
+            $("input").attr("placeholder", "KICK or GO FOR IT?");
           }
           return; // this ends the loop
         } //end of inner if statement
