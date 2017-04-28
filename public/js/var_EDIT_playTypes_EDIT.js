@@ -31,7 +31,7 @@ numberGenerator.effectiveness = function (type) {
       return Math.floor(Math.random() * this[i][1] + this[i][2]);
     }
   }
-};
+}; //comment
 var fieldgoal = [
   /*inside10:*/ [/*outerYdLine*/ 90, /*innerYdLine*/ 100, /*kickOdds*/ 98],
   /*between25and10:*/ [/*outerYdLine*/ 75, /*innerYdLine*/ 90, /*kickOdds*/ 80],
