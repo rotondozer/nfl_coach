@@ -10,7 +10,7 @@ $(document).ready(function() {
       } else if (playCall === 'pass') {
         $("input").attr("placeholder", "SHORT, MEDIUM or DEEP pass?");
       } else if (playCall === "kick") {
-        $("input").attr("placeholder", "PUNT or FIELD GOAL?");
+        $("input").attr("placeholder", "PUNT or FIELD GOAL");
       } else {
         alert("choose a play");
         playCall = null; // if no valid play is selected reset null to prevent proceeding to next step
