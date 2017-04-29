@@ -60,7 +60,7 @@ fieldgoal.kick = function() {
 function punt() {
   var puntDistance = numberGenerator.effectiveness("punt");
   $("#home-play-updates").append("HOME team punted for " + puntDistance + " yards");
-  playTypes.playExecution("puntkick");
+  playTypes.playExecution("puntreturn");
   fieldPosition += puntDistance - ydsGainedThisDown;
   $("#away-play-updates").append("Punt returned for " + ydsGainedThisDown + " yards.<br>AWAY team starts on the " + ydLineConverter() + " yard line.");
 }
@@ -71,7 +71,7 @@ var playTypes = {
   shortpass: {execThreshold: 80, one: "effective", two: "minEffective", three: "notEffective", four: "veryEffective", five: "superEffective", six: "bigPlay"},
   mediumpass: {execThreshold: 60, one: "veryEffective", two: "superEffective", three: "effective", four: "bigPlay", five: "notEffective", six: "minEffective"},
   deeppass: {execThreshold: 30, one: "bigPlay", two: "superEffective", three: "veryEffective", four: "effective", five: "notEffective", six: "minEffective"},
-  puntkick: {execThreshold: 75, one: "veryEffective", two: "effective", three: "minEffective", four: "notEffective", five: "superEffective", six: "bigPlay"}
+  puntreturn: {execThreshold: 75, one: "veryEffective", two: "effective", three: "minEffective", four: "notEffective", five: "superEffective", six: "bigPlay"}
   //punt object reuturn effectiveness of return, same method applied
 }
 

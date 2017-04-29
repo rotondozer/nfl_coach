@@ -32,6 +32,7 @@ $(document).ready(function() {
         } else if (type === 'punt') {
           punt();
         }
+        // call opponentPossession function
       }
     } // end of if playcall is not null
     $("input").val("");
