@@ -26,6 +26,10 @@ $(document).ready(function() {
         if (type === 'field goal') {
           fieldgoal.kick();
         }
+      } else if (playCall === 'go for it') {
+        $("input").placeholder("RUN or PASS?");
+        playCall = null;
+        type = null;
       }
     } // end of if playcall is not null
     $("input").val("");
