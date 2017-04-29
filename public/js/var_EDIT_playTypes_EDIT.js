@@ -47,10 +47,11 @@ fieldgoal.kick = function() {
       if (numberGenerator.effectiveness("probability") < this[i][2]) { // if probability generator is in favor of successful kick odd
         $("#home-play-updates").append("FIELD GOAL from the " + ydLineConverter() + " is GOOD!");
         totalPoints += 3;
+        $("#home-team-score").text(totalPoints);
       } else { // probability generated missed field goal odds
         $("#home-play-updates").append("FIELD GOAL from the " + ydLineConverter() + " is MISSED");
       }
-      return;
+      return; // exit loop, call OPPONENT POSSESION FUNCTION
     }
   }
 }
@@ -67,23 +68,24 @@ var playTypes = {
 
 playTypes.playExecution = function(input) { //where 'input' is specificPlay + generalPlay
   // where 'this' is playTypes
-  if (numberGenerator.effectiveness("probability") > this[input].execThreshold) { // gen num to decide if threshold is crossed
+  var executionOdds = numberGenerator.effectiveness("probability");
+  if (executionOdds > this[input].execThreshold) { // gen num to decide if threshold is crossed
     return; //exit if threshold not crossed
   }
   else { // threshold has been crossed
-    var odds = numberGenerator.effectiveness("probability");
+    var effectivenessOdds = numberGenerator.effectiveness("probability");
     // HOW DO I CONSOLIDATE THIS...IMMEDIATELY INVOKE FUNCTION? for loop, i+whatever
-    if (odds <= 46) {
+    if (effectivenessOdds <= 46) {
       ydsGainedThisDown = numberGenerator.effectiveness(this[input].one);
-    } else if (odds >= 47 && odds <= 72) {
+    } else if (effectivenessOdds >= 47 && effectivenessOdds <= 72) {
       ydsGainedThisDown = numberGenerator.effectiveness(this[input].two);
-    } else if (odds >= 73 && odds <= 85) {
+    } else if (effectivenessOdds >= 73 && effectivenessOdds <= 85) {
       ydsGainedThisDown = numberGenerator.effectiveness(this[input].three);
-    } else if (odds >= 86 && odds <= 95) {
+    } else if (effectivenessOdds >= 86 && effectivenessOdds <= 95) {
       ydsGainedThisDown = numberGenerator.effectiveness(this[input].four);
-    } else if (odds >= 96 && odds <= 98) {
+    } else if (effectivenessOdds >= 96 && effectivenessOdds <= 98) {
       ydsGainedThisDown = numberGenerator.effectiveness(this[input].five);
-    } else if (odds >= 99) {
+    } else if (effectivenessOdds >= 99) {
       ydsGainedThisDown = numberGenerator.effectiveness(this[input].six);
     }
   }
@@ -99,7 +101,6 @@ var huddle = function(generalPlay, specificPlay) {
     // if input matches object in playTypes, execute that play function
     playTypes.playExecution(specificPlay + generalPlay);
     $("input").attr("placeholder", "RUN or PASS?");
-
     playCall = null;
     type = null;
   } else {
@@ -111,12 +112,12 @@ var huddle = function(generalPlay, specificPlay) {
 var downs = [
   ["First", true], ["Second", false], ["Third", false], ["Fourth", false]
 ]
+
 // ydsGainedThisDown HAS BEEN UPDATED
 // totalYdsGained HAS BEEN UPDATED
 downs.advanceDown = function(/* not sure if i need these*/) {
   totalYdsGained += ydsGainedThisDown;
   ydsToGo -= ydsGainedThisDown;
-
   if (playCall === null) { // huddle finished with success
     var arrLength = this.length;
     var i;
@@ -125,7 +126,6 @@ downs.advanceDown = function(/* not sure if i need these*/) {
         $("#home-play-updates").append("<p>" + ydsGainedThisDown + " yards gained on " + this[i][0] + " down</p>" );
       }
     }
-
     if (totalYdsGained >= 100) { //TOUCHDOWN
       totalPoints += 7; //increase totalPoints by 7
       $("#home-play-updates").append("<p>TOUCHDOWN!</p>" );
@@ -154,6 +154,7 @@ downs.advanceDown = function(/* not sure if i need these*/) {
           if (downs[3][1]) {
             $("input").attr("placeholder", "KICK or GO FOR IT?");
           }
+          ydsGainedThisDown = 0;
           return; // this ends the loop
         } //end of inner if statement
       } // end of inner loop
@@ -162,5 +163,4 @@ downs.advanceDown = function(/* not sure if i need these*/) {
   else { // huddle is not finished
     return;
   }//end of outer else statement
-  ydsGainedThisDown = 0;
 }// END of downs.advanceDown
