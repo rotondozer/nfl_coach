@@ -29,6 +29,8 @@ $(document).ready(function() {
       } else if (playCall === 'kick') {
         if (type === 'field goal') {
           fieldgoal.kick();
+        } else if (type === 'punt') {
+          punt();
         }
       }
     } // end of if playcall is not null

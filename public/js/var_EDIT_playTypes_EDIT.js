@@ -5,10 +5,10 @@ var numPossessions = 0;
 var quarter = 1; //<--do something with this. for loop likely
 
 var ydLineConverter = function() {
-  if (totalYdsGained > 50) {
-    return "AWAY " + (100 - totalYdsGained);
+  if (fieldPosition > 50) {
+    return "AWAY " + (100 - fieldPosition);
   } else {
-    return "HOME " + totalYdsGained;
+    return "HOME " + fieldPosition;
   }
 }
 
@@ -43,8 +43,9 @@ fieldgoal.kick = function() {
   var arrLength = this.length; //should i be making a function instead of re-writing this exact loop?
   var i;
   for (i = 0; i < arrLength; i++) {
-    if (totalYdsGained > this[i][0] && totalYdsGained <= this[i][1]) {// if totalYdsGained is between outerYdLine and innerYdLine
-      if (numberGenerator.effectiveness("probability") < this[i][2]) { // if probability generator is in favor of successful kick odd
+    if (fieldPosition > this[i][0] && fieldPosition <= this[i][1]) {// if fieldPosition is between outerYdLine and innerYdLine
+      var fgOdds = numberGenerator.effectiveness("probability");
+      if (fgOdds < this[i][2]) { // if probability generator is in favor of successful kick odd
         $("#home-play-updates").append("FIELD GOAL from the " + ydLineConverter() + " is GOOD!");
         totalPoints += 3;
         $("#home-team-score").text(totalPoints);
@@ -55,19 +56,27 @@ fieldgoal.kick = function() {
     }
   }
 }
-//not sure if i want to keep this punt function
+
+function punt() {
+  var puntDistance = numberGenerator.effectiveness("punt");
+  $("#home-play-updates").append("HOME team punted for " + puntDistance + " yards");
+  playTypes.playExecution("puntkick");
+  fieldPosition += puntDistance - ydsGainedThisDown;
+  $("#away-play-updates").append("Punt returned for " + ydsGainedThisDown + " yards.<br>AWAY team starts on the " + ydLineConverter() + " yard line.");
+}
 
 var playTypes = {
   insiderun: {execThreshold: 95, one: "notEffective", two: "minEffective", three: "effective", four: "veryEffective", five: "superEffective", six: "bigPlay"},
   outsiderun: {execThreshold: 90, one: "minEffective", two: "notEffective", three: "effective", four: "veryEffective", five: "superEffective", six: "bigPlay"},
   shortpass: {execThreshold: 80, one: "effective", two: "minEffective", three: "notEffective", four: "veryEffective", five: "superEffective", six: "bigPlay"},
   mediumpass: {execThreshold: 60, one: "veryEffective", two: "superEffective", three: "effective", four: "bigPlay", five: "notEffective", six: "minEffective"},
-  deeppass: {execThreshold: 30, one: "bigPlay", two: "superEffective", three: "veryEffective", four: "effective", five: "notEffective", six: "minEffective"}
+  deeppass: {execThreshold: 30, one: "bigPlay", two: "superEffective", three: "veryEffective", four: "effective", five: "notEffective", six: "minEffective"},
+  puntkick: {execThreshold: 75, one: "veryEffective", two: "effective", three: "minEffective", four: "notEffective", five: "superEffective", six: "bigPlay"}
   //punt object reuturn effectiveness of return, same method applied
 }
 
 playTypes.playExecution = function(input) { //where 'input' is specificPlay + generalPlay
-  // where 'this' is playTypes
+  // potentially reset ydsGainedThisDown = 0 here?
   var executionOdds = numberGenerator.effectiveness("probability");
   if (executionOdds > this[input].execThreshold) { // gen num to decide if threshold is crossed
     return; //exit if threshold not crossed
@@ -93,7 +102,7 @@ playTypes.playExecution = function(input) { //where 'input' is specificPlay + ge
 var ydsGainedThisDown = 0;
 var playCall = null;
 var type = null;
-var totalYdsGained = 20;
+var fieldPosition = 20;
 var ydsToGo = 10;
 
 var huddle = function(generalPlay, specificPlay) {
@@ -114,9 +123,9 @@ var downs = [
 ]
 
 // ydsGainedThisDown HAS BEEN UPDATED
-// totalYdsGained HAS BEEN UPDATED
+// fieldPosition HAS BEEN UPDATED
 downs.advanceDown = function(/* not sure if i need these*/) {
-  totalYdsGained += ydsGainedThisDown;
+  fieldPosition += ydsGainedThisDown;
   ydsToGo -= ydsGainedThisDown;
   if (playCall === null) { // huddle finished with success
     var arrLength = this.length;
@@ -124,9 +133,10 @@ downs.advanceDown = function(/* not sure if i need these*/) {
     for (i = 0; i < arrLength; i++) {
       if (this[i][1]) {
         $("#home-play-updates").append("<p>" + ydsGainedThisDown + " yards gained on " + this[i][0] + " down</p>" );
+        ydsGainedThisDown = 0;
       }
     }
-    if (totalYdsGained >= 100) { //TOUCHDOWN
+    if (fieldPosition >= 100) { //TOUCHDOWN
       totalPoints += 7; //increase totalPoints by 7
       $("#home-play-updates").append("<p>TOUCHDOWN!</p>" );
       $("#home-team-score").text(totalPoints);
@@ -141,7 +151,7 @@ downs.advanceDown = function(/* not sure if i need these*/) {
           this[i][1] = false; // becomes false
         }
       }
-      $("#home-play-updates").append("<p>FIRST DOWN!<br>First and 10 form the " + ydLineConverter() + " yard line</p>" );
+      $("#home-play-updates").append("<p>FIRST DOWN!<br>First and 10 from the " + ydLineConverter() + " yard line</p>" );
       ydsToGo = 10;
     } // end of first down condition
     else /* NEITHER FIRST DOWN NOR TOUCHDOWN ACHIEVED maybe else if */{
@@ -154,7 +164,6 @@ downs.advanceDown = function(/* not sure if i need these*/) {
           if (downs[3][1]) {
             $("input").attr("placeholder", "KICK or GO FOR IT?");
           }
-          ydsGainedThisDown = 0;
           return; // this ends the loop
         } //end of inner if statement
       } // end of inner loop
