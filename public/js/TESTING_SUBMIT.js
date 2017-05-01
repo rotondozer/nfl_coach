@@ -24,12 +24,12 @@ $(document).ready(function() {
       type = $("input").val().toLowerCase(); // i don't think i need this if conditional bc huddle has a fail safe for incorrect input...keep for now
       if (playCall === 'run' || playCall === 'pass') {
         huddle(playCall, type); // call huddle, which calls playExecution
-        downs.advanceDown(); // advance downs,
+        downs.advanceDown("AWAY"); // advance downs,
       } else if (playCall === 'kick') {
         if (type === 'field goal') {
-          fieldgoal.kick();
+          fieldgoal.kick("AWAY");
         } else if (type === 'punt') {
-          punt();
+          punt("AWAY", "HOME");
         }
         // call opponentPossession function
       }

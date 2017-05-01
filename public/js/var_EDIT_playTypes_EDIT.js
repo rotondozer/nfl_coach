@@ -1,10 +1,10 @@
 var totalPoints = 0;
 
-var ydLineConverter = function() {
+var ydLineConverter = function(team) {
   if (fieldPosition > 50) {
-    return "AWAY " + (100 - fieldPosition);
+    return team + " " + (100 - fieldPosition);
   } else {
-    return "HOME " + fieldPosition;
+    return team + " " + fieldPosition;
   }
 }
 
@@ -35,34 +35,34 @@ var fieldgoal = [
   /*between42and35:*/ [/*outerYdLine*/ 57, /*innerYdLine*/ 64, /*kickOdds*/ 20],
   /*outOfRange:*/ [/*outerYdLine*/ 1, /*innerYdLine*/ 57, /*kickOdds*/ 0]
 ]
-fieldgoal.kick = function() {
+fieldgoal.kick = function(team) {
   var arrLength = this.length; //should i be making a function instead of re-writing this exact loop?
   var i;
   for (i = 0; i < arrLength; i++) {
     if (fieldPosition > this[i][0] && fieldPosition <= this[i][1]) {// if fieldPosition is between outerYdLine and innerYdLine
       var fgOdds = numberGenerator.effectiveness("probability");
       if (fgOdds < this[i][2]) { // if probability generator is in favor of successful kick odd
-        $("#home-play-updates").append("FIELD GOAL from the " + ydLineConverter() + " is GOOD!");
+        $("#" + team + "-play-updates").prepend("FIELD GOAL from the " + ydLineConverter(team) + " is GOOD!");
         totalPoints += 3;
-        $("#home-team-score").text(totalPoints);
+        $("#" + team + "-team-score").text(totalPoints);
       } else { // probability generated missed field goal odds
-        $("#home-play-updates").append("FIELD GOAL from the " + ydLineConverter() + " is MISSED");
+        $("#" + team + "-play-updates").prepend("FIELD GOAL from the " + ydLineConverter(team) + " is MISSED");
       }
       return; // exit loop, call OPPONENT POSSESION FUNCTION
     }
   }
 }
 
-function punt() { // can add parameter for HOME or AWAY
+function punt(kickTeam, returnTeam) { // can add parameter for HOME or AWAY
   var puntDistance = numberGenerator.effectiveness("punt");
-  $("#home-play-updates").append("HOME team punted for " + puntDistance + " yards");
+  $("#" + kickTeam + "-play-updates").prepend(kickTeam + " team punted for " + puntDistance + " yards");
   if (fieldPosition + puntDistance > 100) {
     fieldPosition = 80;
-    $("#away-play-updates").append("Touchback. First and 10 on the " + ydLineConverter() + " yard line.");
+    $("#" + returnTeam + "-play-updates").prepend("Touchback. First and 10 on the " + ydLineConverter(returnTeam) + " yard line.");
   } else {
     playTypes.playExecution("puntreturn");
     fieldPosition += puntDistance - ydsGainedThisDown;
-    $("#away-play-updates").append("Punt returned for " + ydsGainedThisDown + " yards.<br>First and 10 on the " + ydLineConverter() + " yard line.");
+    $("#" + returnTeam + "-play-updates").prepend("Punt returned for " + ydsGainedThisDown + " yards.<br>First and 10 on the " + ydLineConverter(returnTeam) + " yard line.");
   }
 }
 
@@ -125,7 +125,7 @@ var downs = [
 
 // ydsGainedThisDown HAS BEEN UPDATED
 // fieldPosition HAS BEEN UPDATED
-downs.advanceDown = function(/* not sure if i need these*/) {
+downs.advanceDown = function(team) {
   fieldPosition += ydsGainedThisDown;
   ydsToGo -= ydsGainedThisDown;
   if (playCall === null) { // huddle finished with success
@@ -133,14 +133,14 @@ downs.advanceDown = function(/* not sure if i need these*/) {
     var i;
     for (i = 0; i < arrLength; i++) {
       if (this[i][1]) {
-        $("#home-play-updates").append("<p>" + ydsGainedThisDown + " yards gained on " + this[i][0] + " down</p>" );
+        $("#" + team + "-play-updates").prepend("<p>" + ydsGainedThisDown + " yards gained on " + this[i][0] + " down</p>" );
         ydsGainedThisDown = 0;
       }
     }
     if (fieldPosition >= 100) { //TOUCHDOWN
       totalPoints += 7; //increase totalPoints by 7
-      $("#home-play-updates").append("<p>TOUCHDOWN!</p>" );
-      $("#home-team-score").text(totalPoints);
+      $("#" + team + "-play-updates").prepend("<p>TOUCHDOWN!</p>" );
+      $("#" + team + "-team-score").text(totalPoints);
       // begin opponent possesion, reset everything
       // return
     }
@@ -152,7 +152,7 @@ downs.advanceDown = function(/* not sure if i need these*/) {
           this[i][1] = false; // becomes false
         }
       }
-      $("#home-play-updates").append("<p>FIRST DOWN!<br>First and 10 from the " + ydLineConverter() + " yard line</p>" );
+      $("#" + team + "-play-updates").prepend("<p>FIRST DOWN!<br>First and 10 from the " + ydLineConverter(team) + " yard line</p>" );
       ydsToGo = 10;
     } // end of first down condition
     else /* NEITHER FIRST DOWN NOR TOUCHDOWN ACHIEVED maybe else if */{
@@ -161,7 +161,7 @@ downs.advanceDown = function(/* not sure if i need these*/) {
         if (this[i][1]) {
           this[i][1] = false; // this down
           this[(i + 1) % 4][1] = true; // next down <-- this alg loops around to first -- not actually needed here
-          $("#home-play-updates").append("<p>" + this[(i + 1) % 4][0] + " down and " + ydsToGo + " from the " + ydLineConverter() + " yard line");
+          $("#" + team + "-play-updates").prepend("<p>" + this[(i + 1) % 4][0] + " down and " + ydsToGo + " from the " + ydLineConverter(team) + " yard line");
           if (downs[3][1]) {
             $("input").attr("placeholder", "KICK or GO FOR IT?");
           }
@@ -174,24 +174,3 @@ downs.advanceDown = function(/* not sure if i need these*/) {
     return;
   }//end of outer else statement
 }// END of downs.advanceDown
-
-var awayPoints = 0;
-function awayPossession(ydLineParam1, ydLineParam2, tdOddsThresh, fgOddsParam1, fgOddsParam2) {
-  //reset everything pertaining to offensive playcalls
-  var awayScoringOdds = numberGenerator.effectiveness("probability");
-  if (fieldPosition <= ydLineParam1 && fieldPosition >= ydLineParam2) {
-    if (awayScoringOdds <= tdOddsThresh) {
-      awayPoints += 7;
-      $("#away-play-updates").append("AWAY team scored a TOUCHDOWN on their possession.");
-      $("#away-team-score").text(awayPoints);
-      fieldPosition = 20;
-    } else if (awayScoringOdds >= fgOddsParam1 && awayScoringOdds <= fgOddsParam2) {
-      awayPoints += 3;
-      $("#away-play-updates").append("AWAY team scored a FIELD GOAL on their possession.");
-      $("#away-team-score").text(awayPoints);
-    } else {
-      punt(away);
-    }
-  }
-  $("#home-play-updates").append("");
-}
