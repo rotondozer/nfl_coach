@@ -3,9 +3,9 @@ $(document).ready(function() {
   $("#play-call").submit(function(event) {
     event.preventDefault();
 
-    if (playCall == null) {
-      playCall = $("input").val().toLowerCase();
-      if (playCall === 'run') {
+      if (playCall == null) {
+        playCall = $("input").val().toLowerCase();
+        if (playCall === 'run') {
         $("input").attr("placeholder", "INSIDE or OUTSIDE run?");
       } else if (playCall === 'pass') {
         $("input").attr("placeholder", "SHORT, MEDIUM or DEEP pass?");
@@ -31,9 +31,15 @@ $(document).ready(function() {
         } else if (type === 'punt') {
           punt("AWAY", "HOME");
         }
-        // call opponentPossession function
       }
     } // end of if playcall is not null
+
+    /*while(awayPossession) {
+      $("input").attr("placeholder", "")
+      if (playCall == null) {
+        playCall = $("input").val().toLowerCase();
+      }
+    }*/
     $("input").val("");
   }); // end of submit function
 }); // end of doc ready
