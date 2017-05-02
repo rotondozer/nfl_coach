@@ -22,15 +22,20 @@ $(document).ready(function() {
 
     else if (playCall != null) {
       type = $("input").val().toLowerCase(); // i don't think i need this if conditional bc huddle has a fail safe for incorrect input...keep for now
-      if (playCall === 'run' || playCall === 'pass') {
-        huddle(playCall, type); // call huddle, which calls playExecution
-        downs.advanceDown("AWAY"); // advance downs,
-      } else if (playCall === 'kick') {
-        if (type === 'field goal') {
-          fieldgoal.kick("AWAY");
-        } else if (type === 'punt') {
-          punt("AWAY", "HOME");
+      while (homePossession) {
+        if (playCall === 'run' || playCall === 'pass') {
+          huddle(playCall, type); // call huddle, which calls playExecution
+          downs.advanceDown("HOME"); // advance downs,
+        } else if (playCall === 'kick') {
+          if (type === 'field goal') {
+            fieldgoal.kick("HOME");
+          } else if (type === 'punt') {
+            punt("HOME", "AWAY");
+          }
         }
+      }
+      while (awayPossession) {
+        
       }
     } // end of if playcall is not null
 

@@ -80,8 +80,14 @@ var playTypes = {
 playTypes.playExecution = function(input) { //where 'input' is specificPlay + generalPlay
   // potentially reset ydsGainedThisDown = 0 here?
   var executionOdds = numberGenerator.effectiveness("probability");
-  if (executionOdds > this[input].execThreshold) { // gen num to decide if threshold is crossed
-    return; //exit if threshold not crossed
+  if (homePossession) {
+    if (executionOdds > this[input].execThreshold) { // gen num to decide if threshold is crossed
+      return; //exit if threshold not crossed
+    }
+  } else if (awayPossession) {
+    if (input === (type + playCall)) {
+      return; // return with ydsGainedThisDown = 0 if user guessess play correctly
+    }
   }
   else { // threshold has been crossed
     var effectivenessOdds = numberGenerator.effectiveness("probability");
@@ -108,9 +114,13 @@ var fieldPosition = 20;
 var ydsToGo = 10;
 
 var huddle = function(generalPlay, specificPlay) {
-  if (playTypes.hasOwnProperty(specificPlay + generalPlay)) {
-    // if input matches object in playTypes, execute that play function
-    playTypes.playExecution(specificPlay + generalPlay);
+  if (homePossession) {
+    if (playTypes.hasOwnProperty(specificPlay + generalPlay)) {
+      // if input matches object in playTypes, execute that play function
+      playTypes.playExecution(specificPlay + generalPlay);
+    } else if (awayPossession) {
+      playTypes.playExecution(randomProperty(playTypes));
+    }
     $("input").attr("placeholder", "RUN or PASS?");
     playCall = null;
     type = null;
@@ -171,7 +181,8 @@ downs.advanceDown = function(team) {
             $("input").attr("placeholder", "KICK or GO FOR IT?");
           } else if (downs[4][1]) { //TURNOVER
             // do something here
-            fieldPosition = 100 - fieldPosition;
+            fieldPosition = 100 - fieldPosition; // mirror field position
+            turnover(team);
           }
           return; // this ends the loop
         } //end of inner if statement
@@ -184,6 +195,25 @@ downs.advanceDown = function(team) {
 }// END of downs.advanceDown
 var homePossession = false;
 var awayPossession = true;
-function awayDrive() {
+function turnover(team) {
+
+  if (team === "AWAY") {
+    awayPossession = false;
+    homePossession = true;
+    $("h4").text("GUESS the AWAY team's offensive play!");
+  } else if (team === "HOME") {
+    homePossession = false;
+    awayPossession = true;
+    $("h4").text("What's the call, coach?");
+  }
+
+}
+
+var randomProperty = function (obj) {
+    var keys = Object.keys(obj)
+    return obj[keys[ keys.length * Math.random() << 0]];
+};
+
+function awayHuddle() {
 
 }
