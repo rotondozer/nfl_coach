@@ -1,4 +1,5 @@
 var homePoints = 0;
+var awayPoints = 0;
 
 var ydLineConverter = function(team) {
   if (fieldPosition > 50) {
@@ -6,6 +7,17 @@ var ydLineConverter = function(team) {
   } else {
     return team + " " + fieldPosition;
   }
+}
+
+function randomProperty(obj) { // only generates first property insiderun
+  var result;
+  var count = 0;
+  for (var prop in obj) {
+    if (Math.random() < 1/++count) {
+       result = prop;
+    }
+  }
+  return result;
 }
 
 var numberGenerator = [
@@ -48,7 +60,7 @@ fieldgoal.kick = function(team) {
       } else { // probability generated missed field goal odds
         $("#" + team + "-play-updates").prepend("FIELD GOAL from the " + ydLineConverter(team) + " is MISSED");
       }
-      return; // exit loop, call OPPONENT POSSESION FUNCTION
+      return turnover(team); // exit loop, call OPPONENT POSSESION FUNCTION
     }
   }
 }
@@ -65,6 +77,7 @@ function punt(kickTeam, returnTeam) { // can add parameter for HOME or AWAY
     fieldPosition = 100 - fieldPosition; // mirror field position for AWAY possession
     $("#" + returnTeam + "-play-updates").prepend("Punt returned for " + ydsGainedThisDown + " yards.<br>First and 10 on the " + ydLineConverter(returnTeam) + " yard line.<br>");
   }
+  turnover(kickTeam);
 }
 
 var playTypes = {
@@ -79,17 +92,20 @@ var playTypes = {
 
 playTypes.playExecution = function(input) { //where 'input' is specificPlay + generalPlay
   // potentially reset ydsGainedThisDown = 0 here?
-  var executionOdds = numberGenerator.effectiveness("probability");
+  var executionOdds;
   if (homePossession) {
-    if (executionOdds > this[input].execThreshold) { // gen num to decide if threshold is crossed
-      return; //exit if threshold not crossed
-    }
+    executionOdds = numberGenerator.effectiveness("probability");
   } else if (awayPossession) {
     if (input === (type + playCall)) {
-      return; // return with ydsGainedThisDown = 0 if user guessess play correctly
+      $("#AWAY-play-updates").prepend("<p>DEFENSE guessed play!</p>");
+      executionOdds = 99;
     }
   }
-  else { // threshold has been crossed
+
+  if (executionOdds > this[input].execThreshold) { // gen num to decide if threshold is crossed
+    return; //exit if threshold not crossed
+            // return with ydsGainedThisDown = 0 if user guessess play correctly
+  } else { // threshold has been crossed
     var effectivenessOdds = numberGenerator.effectiveness("probability");
     // HOW DO I CONSOLIDATE THIS...IMMEDIATELY INVOKE FUNCTION? for loop, i+whatever
     if (effectivenessOdds <= 46) {
@@ -114,17 +130,18 @@ var fieldPosition = 20;
 var ydsToGo = 10;
 
 var huddle = function(generalPlay, specificPlay) {
-  if (homePossession) {
-    if (playTypes.hasOwnProperty(specificPlay + generalPlay)) {
-      // if input matches object in playTypes, execute that play function
+  if (playTypes.hasOwnProperty(specificPlay + generalPlay)) { // if input matches object in playTypes, execute that play function
+    if (homePossession) {
       playTypes.playExecution(specificPlay + generalPlay);
-    } else if (awayPossession) {
+    }
+    else if (awayPossession) {
       playTypes.playExecution(randomProperty(playTypes));
     }
     $("input").attr("placeholder", "RUN or PASS?");
     playCall = null;
     type = null;
-  } else {
+  }
+ else {
     alert("choose a " + generalPlay.toUpperCase() + " type");
     type = null;
   }
@@ -156,8 +173,7 @@ downs.advanceDown = function(team) {
       }
       $("#" + team + "-play-updates").prepend("<p>TOUCHDOWN!</p>" );
       $("#" + team + "-team-score").text(homePoints);
-      // begin opponent possesion, reset everything
-      // return
+      turnover(team);
     }
     else if (ydsToGo <= 0) { // FIRST DOWN
       // first down becomes true, all other downs[var][1] = false
@@ -175,12 +191,12 @@ downs.advanceDown = function(team) {
         // this down becomes false. next down becomes true
         if (this[i][1]) {
           this[i][1] = false; // this down
-          this[i + 1][1] = true;
+          this[(i + 1) % 5][1] = true;
           $("#" + team + "-play-updates").prepend("<p>" + this[i + 1][0] + " down and " + ydsToGo + " from the " + ydLineConverter(team) + " yard line");
           if (downs[3][1]) { // FOURTH down
             $("input").attr("placeholder", "KICK or GO FOR IT?");
           } else if (downs[4][1]) { //TURNOVER
-            // do something here
+
             fieldPosition = 100 - fieldPosition; // mirror field position
             turnover(team);
           }
@@ -193,8 +209,8 @@ downs.advanceDown = function(team) {
     return;
   }//end of outer else statement
 }// END of downs.advanceDown
-var homePossession = false;
-var awayPossession = true;
+var homePossession = true;
+var awayPossession = false;
 function turnover(team) {
 
   if (team === "AWAY") {
@@ -206,14 +222,5 @@ function turnover(team) {
     awayPossession = true;
     $("h4").text("What's the call, coach?");
   }
-
-}
-
-var randomProperty = function (obj) {
-    var keys = Object.keys(obj)
-    return obj[keys[ keys.length * Math.random() << 0]];
-};
-
-function awayHuddle() {
 
 }

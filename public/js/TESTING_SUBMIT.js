@@ -22,7 +22,7 @@ $(document).ready(function() {
 
     else if (playCall != null) {
       type = $("input").val().toLowerCase(); // i don't think i need this if conditional bc huddle has a fail safe for incorrect input...keep for now
-      while (homePossession) {
+      if (homePossession) {
         if (playCall === 'run' || playCall === 'pass') {
           huddle(playCall, type); // call huddle, which calls playExecution
           downs.advanceDown("HOME"); // advance downs,
@@ -34,8 +34,10 @@ $(document).ready(function() {
           }
         }
       }
-      while (awayPossession) {
-        
+      if (awayPossession) {
+        huddle(playCall, type);
+        downs.advanceDown("AWAY");
+
       }
     } // end of if playcall is not null
 
