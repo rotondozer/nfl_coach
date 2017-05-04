@@ -20,6 +20,23 @@ function randomProperty(obj) { // only generates first property insiderun
   return result;
 }
 
+var downs = [
+  ["First", true], ["Second", false], ["Third", false], ["Fourth", false], ["TURNOVER", false]
+]
+/* not sure I need the loop in the function if this down is assigned 'false' before anytime it's called. */
+downs.firstDown = function(parameter) {
+  var arrLength = this.length;
+  var i;
+  ydsToGo = 10;
+  this[0][1] = true;
+  for (i = 0; i < arrLength; i++) {
+    if (this[i][0] != "First") {
+      this[i][1] = false;
+    }
+  }
+  $("#" + parameter + "-play-updates").prepend("<p>First and 10 from the " + ydLineConverter(parameter) + " yard line.<br>FIRST DOWN!</p>");
+}
+
 var numberGenerator = [
   ["probability", 101, 0], //1-100
   ["notEffective", 2, 1],// 1-2 yds
@@ -147,80 +164,63 @@ var huddle = function(generalPlay, specificPlay) {
   }
 };
 
-var downs = [
-  ["First", true], ["Second", false], ["Third", false], ["Fourth", false], ["TURNOVER", false]
-]
-
 // ydsGainedThisDown HAS BEEN UPDATED
 // fieldPosition HAS BEEN UPDATED
 downs.advanceDown = function(team) {
-  fieldPosition += ydsGainedThisDown;
-  ydsToGo -= ydsGainedThisDown;
   if (playCall === null) { // huddle finished with success
+    fieldPosition += ydsGainedThisDown;
+    ydsToGo -= ydsGainedThisDown;
     var arrLength = this.length;
     var i;
     for (i = 0; i < arrLength; i++) {
       if (this[i][1]) {
         $("#" + team + "-play-updates").prepend("<p>" + ydsGainedThisDown + " yards gained on " + this[i][0] + " down</p>" );
         ydsGainedThisDown = 0;
-      }
-    }
-    if (fieldPosition >= 100) { //TOUCHDOWN
-      if (awayPossession) {
-        awayPoints += 7;
-      } else if (homePossession) {
-        homePoints += 7; //increase homePoints by 7
-      }
-      $("#" + team + "-play-updates").prepend("<p>TOUCHDOWN!</p>" );
-      $("#" + team + "-team-score").text(homePoints);
-      turnover(team);
-    }
-    else if (ydsToGo <= 0) { // FIRST DOWN
-      // first down becomes true, all other downs[var][1] = false
-      this[0][1] = true; //first down becomes true
-      for (i = 0; i < arrLength; i++) {
-        if (this[i][0] != "First") { // any down not 'first'
-          this[i][1] = false; // becomes false
-        }
-      }
-      $("#" + team + "-play-updates").prepend("<p>FIRST DOWN!<br>First and 10 from the " + ydLineConverter(team) + " yard line</p>" );
-      ydsToGo = 10;
-    } // end of first down condition
-    else /* NEITHER FIRST DOWN NOR TOUCHDOWN ACHIEVED maybe else if */{
-      for (i = 0; i < arrLength; i++) {
-        // this down becomes false. next down becomes true
-        if (this[i][1]) {
-          this[i][1] = false; // this down
-          this[(i + 1) % 5][1] = true;
-          $("#" + team + "-play-updates").prepend("<p>" + this[i + 1][0] + " down and " + ydsToGo + " from the " + ydLineConverter(team) + " yard line");
-          if (downs[3][1]) { // FOURTH down
-            $("input").attr("placeholder", "KICK or GO FOR IT?");
-          } else if (downs[4][1]) { //TURNOVER
-
-            fieldPosition = 100 - fieldPosition; // mirror field position
-            turnover(team);
+        this[i][1] = false; // this down becomes false
+        if (fieldPosition >= 100) { //TOUCHDOWN
+          if (awayPossession) {
+            awayPoints += 7;
+          } else if (homePossession) {
+            homePoints += 7; //increase homePoints by 7
           }
-          return; // this ends the loop
-        } //end of inner if statement
-      } // end of inner loop
-    } //end of no first, no td of advance down
-  } //end of outer if
-  else { // huddle is not finished
-    return;
-  }//end of outer else statement
-}// END of downs.advanceDown
+          $("#" + team + "-play-updates").prepend("<p>TOUCHDOWN!</p>" );
+          $("#" + team + "-team-score").text(homePoints);
+          return turnover(team);
+        } else if (ydsToGo <= 0) { // FIRST DOWN
+          // first down becomes true, all other downs[var][1] = false
+          downs.firstDown(team);
+        } else { // neither FIRST DOWN,  or TD,
+          this[i + 1][1] = true; // next down becomes true
+          $("#" + team + "-play-updates").prepend("<p>" + this[i + 1][0] + " down and " + ydsToGo + " from the " + ydLineConverter(team) + " yard line"); // announce next down and field position
+          if (this[3][1]) { // FOURTH down
+            $("input").attr("placeholder", "KICK or GO FOR IT?");
+          } else if (this[4][1]) { //TURNOVER
+            return turnover(team);
+          }
+        }
+
+        return; // end loop (inside if)
+      }
+
+
+    } // end of for loop through downs array
+  } else { // huddle is not finished (playCall != null)
+      return;
+  }
+}
 var homePossession = true;
 var awayPossession = false;
 function turnover(team) {
-
-  if (team === "AWAY") {
+  if (team === "AWAY") { //AWAY team commits turnover
     awayPossession = false;
     homePossession = true;
-    $("h4").text("GUESS the AWAY team's offensive play!");
-  } else if (team === "HOME") {
+    $("h4").text("What's the call, coach?");
+  } else if (team === "HOME") { //HOME team commits turnover
     homePossession = false;
     awayPossession = true;
-    $("h4").text("What's the call, coach?");
+    $("h4").text("GUESS the AWAY team's offensive play!");
   }
-
+  downs.firstDown(team)
+  $("input").val("");
+  fieldPosition = 100 - fieldPosition; // mirror field position
 }
