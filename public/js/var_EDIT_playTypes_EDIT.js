@@ -1,8 +1,4 @@
-var opponentFieldPosition = 100;
 var totalPoints = 0;
-var opponentPoints = 0;
-var numPossessions = 0;
-var quarter = 1; //<--do something with this. for loop likely
 
 var ydLineConverter = function() {
   if (fieldPosition > 50) {
@@ -57,12 +53,23 @@ fieldgoal.kick = function() {
   }
 }
 
-function punt() {
+function punt() { // can add parameter for HOME or AWAY
   var puntDistance = numberGenerator.effectiveness("punt");
   $("#home-play-updates").append("HOME team punted for " + puntDistance + " yards");
+<<<<<<< HEAD
   playTypes.playExecution("puntreturn");
   fieldPosition += puntDistance - ydsGainedThisDown;
   $("#away-play-updates").append("Punt returned for " + ydsGainedThisDown + " yards.<br>AWAY team starts on the " + ydLineConverter() + " yard line.");
+=======
+  if (fieldPosition + puntDistance > 100) {
+    fieldPosition = 80;
+    $("#away-play-updates").append("Touchback. First and 10 on the " + ydLineConverter() + " yard line.");
+  } else {
+    playTypes.playExecution("puntreturn");
+    fieldPosition += puntDistance - ydsGainedThisDown;
+    $("#away-play-updates").append("Punt returned for " + ydsGainedThisDown + " yards.<br>First and 10 on the " + ydLineConverter() + " yard line.");
+  }
+>>>>>>> opponent_possession
 }
 
 var playTypes = {
@@ -173,3 +180,24 @@ downs.advanceDown = function(/* not sure if i need these*/) {
     return;
   }//end of outer else statement
 }// END of downs.advanceDown
+
+var awayPoints = 0;
+function awayPossession(ydLineParam1, ydLineParam2, tdOddsThresh, fgOddsParam1, fgOddsParam2) {
+  //reset everything pertaining to offensive playcalls
+  var awayScoringOdds = numberGenerator.effectiveness("probability");
+  if (fieldPosition <= ydLineParam1 && fieldPosition >= ydLineParam2) {
+    if (awayScoringOdds <= tdOddsThresh) {
+      awayPoints += 7;
+      $("#away-play-updates").append("AWAY team scored a TOUCHDOWN on their possession.");
+      $("#away-team-score").text(awayPoints);
+      fieldPosition = 20;
+    } else if (awayScoringOdds >= fgOddsParam1 && awayScoringOdds <= fgOddsParam2) {
+      awayPoints += 3;
+      $("#away-play-updates").append("AWAY team scored a FIELD GOAL on their possession.");
+      $("#away-team-score").text(awayPoints);
+    } else {
+      punt(away);
+    }
+  }
+  $("#home-play-updates").append("");
+}

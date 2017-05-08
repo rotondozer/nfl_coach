@@ -14,7 +14,6 @@ $(document).ready(function() {
       } else if (playCall === 'go for it') {
         $("input").attr("placeholder", "RUN or PASS?");
         playCall = null;
-        type = null;
       } else {
         alert("choose a play");
         playCall = null; // if no valid play is selected reset null to prevent proceeding to next step
