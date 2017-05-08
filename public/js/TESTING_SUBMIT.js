@@ -25,10 +25,10 @@ $(document).ready(function() {
       if (homePossession) {
         if (playCall === 'run' || playCall === 'pass') {
           huddle(playCall, type); // call huddle, which calls playExecution
-          downs.advanceDown("HOME"); // advance downs,
+          downs.advanceDown("HOME", "AWAY"); // advance downs,
         } else if (playCall === 'kick') {
           if (type === 'field goal') {
-            fieldgoal.kick("HOME");
+            fieldgoal.kick("HOME", "AWAY");
           } else if (type === 'punt') {
             punt("HOME", "AWAY");
           }
@@ -36,7 +36,7 @@ $(document).ready(function() {
       }
       if (awayPossession) {
         huddle(playCall, type);
-        downs.advanceDown("AWAY");
+        downs.advanceDown("AWAY", "HOME");
 
       }
     } // end of if playcall is not null

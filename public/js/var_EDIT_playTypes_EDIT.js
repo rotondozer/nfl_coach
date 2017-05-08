@@ -1,11 +1,18 @@
 var homePoints = 0;
 var awayPoints = 0;
+var ydsGainedThisDown = 0;
+var homePossession = true;
+var awayPossession = false;
+var playCall = null;
+var type = null;
+var fieldPosition = 20;
+var ydsToGo = 10;
 
-var ydLineConverter = function(team) {
+var ydLineConverter = function(thisTeam, otherTeam) {
   if (fieldPosition > 50) {
-    return team + " " + (100 - fieldPosition);
+    return otherTeam + " " + (100 - fieldPosition);
   } else {
-    return team + " " + fieldPosition;
+    return thisTeam + " " + fieldPosition;
   }
 }
 
@@ -18,13 +25,13 @@ function randomProperty(obj) { // only generates first property insiderun
     }
   }
   return result;
-}
+};
 
 var downs = [
   ["First", true], ["Second", false], ["Third", false], ["Fourth", false], ["TURNOVER", false]
 ]
 /* not sure I need the loop in the function if this down is assigned 'false' before anytime it's called. */
-downs.firstDown = function(parameter) {
+downs.firstDown = function(thisTeam, otherTeam) {
   var arrLength = this.length;
   var i;
   ydsToGo = 10;
@@ -34,7 +41,7 @@ downs.firstDown = function(parameter) {
       this[i][1] = false;
     }
   }
-  $("#" + parameter + "-play-updates").prepend("<p>First and 10 from the " + ydLineConverter(parameter) + " yard line.<br>FIRST DOWN!</p>");
+  $("#" + thisTeam + "-play-updates").prepend("<p>First and 10 from the " + ydLineConverter(thisTeam, otherTeam) + " yard line.<br>FIRST DOWN!</p>");
 }
 
 var numberGenerator = [
@@ -64,20 +71,21 @@ var fieldgoal = [
   /*between42and35:*/ [/*outerYdLine*/ 57, /*innerYdLine*/ 64, /*kickOdds*/ 20],
   /*outOfRange:*/ [/*outerYdLine*/ 1, /*innerYdLine*/ 57, /*kickOdds*/ 0]
 ]
-fieldgoal.kick = function(team) {
+fieldgoal.kick = function(thisTeam, otherTeam) {
   var arrLength = this.length; //should i be making a function instead of re-writing this exact loop?
   var i;
   for (i = 0; i < arrLength; i++) {
     if (fieldPosition > this[i][0] && fieldPosition <= this[i][1]) {// if fieldPosition is between outerYdLine and innerYdLine
       var fgOdds = numberGenerator.effectiveness("probability");
       if (fgOdds < this[i][2]) { // if probability generator is in favor of successful kick odd
-        $("#" + team + "-play-updates").prepend("FIELD GOAL from the " + ydLineConverter(team) + " is GOOD!");
+        $("#" + thisTeam + "-play-updates").prepend("FIELD GOAL from the " + ydLineConverter(thisTeam, otherTeam) + " is GOOD!");
         homePoints += 3;
-        $("#" + team + "-team-score").text(homePoints);
+        $("#" + thisTeam + "-team-score").text(homePoints);
+        fieldPosition = 20;
       } else { // probability generated missed field goal odds
-        $("#" + team + "-play-updates").prepend("FIELD GOAL from the " + ydLineConverter(team) + " is MISSED");
+        $("#" + thisTeam + "-play-updates").prepend("FIELD GOAL from the " + ydLineConverter(thisTeam, otherTeam) + " is MISSED");
       }
-      return turnover(team); // exit loop, call OPPONENT POSSESION FUNCTION
+      return turnover(thisTeam, otherTeam); // exit loop, call OPPONENT POSSESION FUNCTION
     }
   }
 }
@@ -87,14 +95,14 @@ function punt(kickTeam, returnTeam) { // can add parameter for HOME or AWAY
   $("#" + kickTeam + "-play-updates").prepend(kickTeam + " team punted for " + puntDistance + " yards");
   if (fieldPosition + puntDistance > 100) {
     fieldPosition = 20; // mirror field position for AWAY possession
-    $("#" + returnTeam + "-play-updates").prepend("Touchback. First and 10 on the " + ydLineConverter(returnTeam) + " yard line.");
+    $("#" + returnTeam + "-play-updates").prepend("Touchback. First and 10 on the " + ydLineConverter(returnTeam, kickTeam) + " yard line.");
   } else {
     playTypes.playExecution("puntreturn");
     fieldPosition += puntDistance - ydsGainedThisDown;
     fieldPosition = 100 - fieldPosition; // mirror field position for AWAY possession
-    $("#" + returnTeam + "-play-updates").prepend("Punt returned for " + ydsGainedThisDown + " yards.<br>First and 10 on the " + ydLineConverter(returnTeam) + " yard line.<br>");
+    $("#" + returnTeam + "-play-updates").prepend("Punt returned for " + ydsGainedThisDown + " yards.<br>First and 10 on the " + ydLineConverter(returnTeam, kickTeam) + " yard line.<br>");
   }
-  turnover(kickTeam);
+  turnover(kickTeam, returnTeam);
 }
 
 var playTypes = {
@@ -111,8 +119,10 @@ playTypes.playExecution = function(input) { //where 'input' is specificPlay + ge
   // potentially reset ydsGainedThisDown = 0 here?
   var executionOdds;
   if (homePossession) {
+    $("#HOME-play-updates").prepend("<p>" + type + " " + playCall + " play called</p>");
     executionOdds = numberGenerator.effectiveness("probability");
   } else if (awayPossession) {
+    $("#AWAY-play-updates").prepend("<p>" + input + " play called</p>");
     if (input === (type + playCall)) {
       $("#AWAY-play-updates").prepend("<p>DEFENSE guessed play!</p>");
       executionOdds = 99;
@@ -140,11 +150,6 @@ playTypes.playExecution = function(input) { //where 'input' is specificPlay + ge
     }
   }
 };
-var ydsGainedThisDown = 0;
-var playCall = null;
-var type = null;
-var fieldPosition = 20;
-var ydsToGo = 10;
 
 var huddle = function(generalPlay, specificPlay) {
   if (playTypes.hasOwnProperty(specificPlay + generalPlay)) { // if input matches object in playTypes, execute that play function
@@ -166,7 +171,7 @@ var huddle = function(generalPlay, specificPlay) {
 
 // ydsGainedThisDown HAS BEEN UPDATED
 // fieldPosition HAS BEEN UPDATED
-downs.advanceDown = function(team) {
+downs.advanceDown = function(thisTeam, otherTeam) {
   if (playCall === null) { // huddle finished with success
     fieldPosition += ydsGainedThisDown;
     ydsToGo -= ydsGainedThisDown;
@@ -174,28 +179,30 @@ downs.advanceDown = function(team) {
     var i;
     for (i = 0; i < arrLength; i++) {
       if (this[i][1]) {
-        $("#" + team + "-play-updates").prepend("<p>" + ydsGainedThisDown + " yards gained on " + this[i][0] + " down</p>" );
+        $("#" + thisTeam + "-play-updates").prepend("<p>" + ydsGainedThisDown + " yards gained on " + this[i][0] + " down</p>" );
         ydsGainedThisDown = 0;
         this[i][1] = false; // this down becomes false
         if (fieldPosition >= 100) { //TOUCHDOWN
           if (awayPossession) {
             awayPoints += 7;
+            $("#" + thisTeam + "-team-score").text(awayPoints);
           } else if (homePossession) {
             homePoints += 7; //increase homePoints by 7
+            $("#" + thisTeam + "-team-score").text(homePoints);
           }
-          $("#" + team + "-play-updates").prepend("<p>TOUCHDOWN!</p>" );
-          $("#" + team + "-team-score").text(homePoints);
-          return turnover(team);
+          fieldPosition = 20;
+          $("#" + thisTeam + "-play-updates").prepend("<p>TOUCHDOWN!</p>" );
+          return turnover(thisTeam, otherTeam);
         } else if (ydsToGo <= 0) { // FIRST DOWN
           // first down becomes true, all other downs[var][1] = false
-          downs.firstDown(team);
+          downs.firstDown(thisTeam, otherTeam);
         } else { // neither FIRST DOWN,  or TD,
           this[i + 1][1] = true; // next down becomes true
-          $("#" + team + "-play-updates").prepend("<p>" + this[i + 1][0] + " down and " + ydsToGo + " from the " + ydLineConverter(team) + " yard line"); // announce next down and field position
+          $("#" + thisTeam + "-play-updates").prepend("<p>" + this[i + 1][0] + " down and " + ydsToGo + " from the " + ydLineConverter(thisTeam, otherTeam) + " yard line"); // announce next down and field position
           if (this[3][1]) { // FOURTH down
             $("input").attr("placeholder", "KICK or GO FOR IT?");
           } else if (this[4][1]) { //TURNOVER
-            return turnover(team);
+            return turnover(thisTeam, otherTeam);
           }
         }
 
@@ -207,20 +214,23 @@ downs.advanceDown = function(team) {
   } else { // huddle is not finished (playCall != null)
       return;
   }
-}
-var homePossession = true;
-var awayPossession = false;
-function turnover(team) {
-  if (team === "AWAY") { //AWAY team commits turnover
+};
+
+function turnover(thisTeam, otherTeam) {
+  if (thisTeam === "AWAY") { //AWAY team commits turnover
     awayPossession = false;
     homePossession = true;
     $("h4").text("What's the call, coach?");
-  } else if (team === "HOME") { //HOME team commits turnover
+  } else if (thisTeam === "HOME") { //HOME team commits turnover
     homePossession = false;
     awayPossession = true;
     $("h4").text("GUESS the AWAY team's offensive play!");
   }
-  downs.firstDown(team)
+  downs.firstDown(otherTeam, thisTeam);
   $("input").val("");
-  fieldPosition = 100 - fieldPosition; // mirror field position
-}
+  //fieldPosition = 100 - fieldPosition; // mirror field position
+  playCall = null;
+  type = null;
+  $("input").val("");
+  $("input").attr("placeholder", "RUN or PASS?");
+};
