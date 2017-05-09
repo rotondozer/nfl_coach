@@ -16,19 +16,6 @@ var ydLineConverter = function(thisTeam, otherTeam) {
   }
 }
 
-playTypes.randomPlay = function() {
-  var result;
-  var count = 0;
-  for (var prop in this) {
-    if (prop !== 'playExecution' && prop !== 'puntreturn' && prop !== 'randomPlay') {
-      if (Math.random() < 1/++count) {
-        result = prop;
-      }
-    }
-  }
-  return result;
-};
-
 var downs = [
   ["First", true], ["Second", false], ["Third", false], ["Fourth", false], ["TURNOVER", false]
 ]
@@ -151,6 +138,19 @@ playTypes.playExecution = function(input) { //where 'input' is specificPlay + ge
       ydsGainedThisDown = numberGenerator.effectiveness(this[input].six);
     }
   }
+};
+
+playTypes.randomPlay = function() {
+  var result;
+  var count = 0;
+  for (var prop in this) {
+    if (prop !== 'playExecution' && prop !== 'puntreturn' && prop !== 'randomPlay') {
+      if (Math.random() < 1/++count) {
+        result = prop;
+      }
+    }
+  }
+  return result;
 };
 
 var huddle = function(generalPlay, specificPlay) {
