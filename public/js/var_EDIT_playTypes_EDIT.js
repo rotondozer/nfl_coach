@@ -16,17 +16,6 @@ var ydLineConverter = function(thisTeam, otherTeam) {
   }
 }
 
-function randomProperty(obj) { // only generates first property insiderun
-  var result;
-  var count = 0;
-  for (var prop in obj) {
-    if (Math.random() < 1/++count) {
-       result = prop;
-    }
-  }
-  return result;
-};
-
 var downs = [
   ["First", true], ["Second", false], ["Third", false], ["Fourth", false], ["TURNOVER", false]
 ]
@@ -63,7 +52,7 @@ numberGenerator.effectiveness = function (type) {
       return Math.floor(Math.random() * this[i][1] + this[i][2]);
     }
   }
-}; //comment
+};
 var fieldgoal = [
   /*inside10:*/ [/*outerYdLine*/ 90, /*innerYdLine*/ 100, /*kickOdds*/ 98],
   /*between25and10:*/ [/*outerYdLine*/ 75, /*innerYdLine*/ 90, /*kickOdds*/ 80],
@@ -115,6 +104,19 @@ var playTypes = {
   //punt object reuturn effectiveness of return, same method applied
 }
 
+playTypes.randomPlay = function() {
+  var result;
+  var count = 0;
+  for (var prop in this) {
+    if (prop !== 'playExecution' && prop !== 'puntreturn' && prop !== 'randomPlay') {
+      if (Math.random() < 1/++count) {
+        result = prop;
+      }
+    }
+  }
+  return result;
+};
+
 playTypes.playExecution = function(input) { //where 'input' is specificPlay + generalPlay
   // potentially reset ydsGainedThisDown = 0 here?
   var executionOdds;
@@ -157,7 +159,7 @@ var huddle = function(generalPlay, specificPlay) {
       playTypes.playExecution(specificPlay + generalPlay);
     }
     else if (awayPossession) {
-      playTypes.playExecution(randomProperty(playTypes));
+      playTypes.playExecution(playTypes.randomPlay());
     }
     $("input").attr("placeholder", "RUN or PASS?");
     playCall = null;
