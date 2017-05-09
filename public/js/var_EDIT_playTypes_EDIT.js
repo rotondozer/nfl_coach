@@ -16,12 +16,14 @@ var ydLineConverter = function(thisTeam, otherTeam) {
   }
 }
 
-function randomProperty(obj) { // only generates first property insiderun
+playTypes.randomPlay = function() {
   var result;
   var count = 0;
-  for (var prop in obj) {
-    if (Math.random() < 1/++count) {
-       result = prop;
+  for (var prop in this) {
+    if (prop !== 'playExecution' && prop !== 'puntreturn' && prop !== 'randomPlay') {
+      if (Math.random() < 1/++count) {
+        result = prop;
+      }
     }
   }
   return result;
@@ -157,7 +159,7 @@ var huddle = function(generalPlay, specificPlay) {
       playTypes.playExecution(specificPlay + generalPlay);
     }
     else if (awayPossession) {
-      playTypes.playExecution(randomProperty(playTypes));
+      playTypes.playExecution(playTypes.randomPlay());
     }
     $("input").attr("placeholder", "RUN or PASS?");
     playCall = null;
