@@ -79,18 +79,6 @@ fieldgoal.kick = function(thisTeam, otherTeam) {
   }
 }
 
-  playTypes.playExecution("puntreturn");
-  fieldPosition += puntDistance - ydsGainedThisDown;
-  $("#away-play-updates").append("Punt returned for " + ydsGainedThisDown + " yards.<br>AWAY team starts on the " + ydLineConverter() + " yard line.");
-  if (fieldPosition + puntDistance > 100) {
-    fieldPosition = 80;
-    $("#away-play-updates").append("Touchback. First and 10 on the " + ydLineConverter() + " yard line.");
-  } else {
-    playTypes.playExecution("puntreturn");
-    fieldPosition += puntDistance - ydsGainedThisDown;
-    $("#away-play-updates").append("Punt returned for " + ydsGainedThisDown + " yards.<br>First and 10 on the " + ydLineConverter() + " yard line.");
-  }
-
 function punt(kickTeam, returnTeam) { // can add parameter for HOME or AWAY
   var puntDistance = numberGenerator.effectiveness("punt");
   $("#" + kickTeam + "-play-updates").prepend(kickTeam + " team punted for " + puntDistance + " yards");
